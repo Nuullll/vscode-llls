@@ -6,11 +6,14 @@
 	"engines": {
 		"vscode": "^1.64.0"
 	},
+	"dependencies": {
+		"vscode-languageclient": "^7.0.0"
+	},
 	"categories": [
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:llvm-assembly-language-client.helloWorld"
+		"onLanguage:llvm"
 	],
 	"main": "./out/extension.js",
 	"contributes": {

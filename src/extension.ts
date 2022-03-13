@@ -2,24 +2,55 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+import {
+	LanguageClient,
+	LanguageClientOptions,
+	ServerOptions,
+	Executable
+} from 'vscode-languageclient/node';
+
+let client: LanguageClient;
+const config = vscode.workspace.getConfiguration('LLVMLanguageServer');
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
+	const outputChannel = vscode.window.createOutputChannel('LLVM Language Server');
+	context.subscriptions.push(outputChannel);
+
 	console.log('Congratulations, your extension "llvm-assembly-language-client" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('llvm-assembly-language-client.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from LLVM Assembly Language Client!');
-	});
+	// Options to control the language client
+	const clientOptions: LanguageClientOptions = {
+		// Register the client for *.ll documents
+		documentSelector: [{ scheme: 'file', language: 'llvm' }, { pattern: '**/*.ll' }],
+		outputChannel: outputChannel
+	};
 
-	context.subscriptions.push(disposable);
+	const serverExe: Executable = {
+		command: config.lllsPath
+	};
+
+	const serverDebugExe: Executable = {
+		command: config.lllsPath,
+		args: ['-debug-only=llls-lsp-transport']
+	};
+
+	const serverOptions = {
+		run: serverExe,
+		debug: serverDebugExe
+	};
+
+	// Create the language client and start the client.
+	client = new LanguageClient(
+		'llls',
+		'LLVM Language Server',
+		serverOptions,
+		clientOptions,
+		true
+	);
+
+	client.start();
 }
 
 // this method is called when your extension is deactivated
